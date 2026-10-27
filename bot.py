@@ -44,12 +44,15 @@ async def change_status():
 
 @bot.event
 async def on_ready():
+    await bot.load_extension("cogs.moderation")
+    
     print(f"{bot.user.name}, Hii, i'm Wentyy! (ID: {bot.user.id})")
     print("--------------------------------------------------------")
     
     # Arka plan döngüsünü başlatıyoruz!
     if not change_status.is_running():
         change_status.start()
+
 
 if __name__ == "__main__":
     bot.run(TOKEN)

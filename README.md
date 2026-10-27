@@ -13,6 +13,19 @@ A modular, advanced, and clean Discord bot built with Python using `discord.py`.
 
 ---
 
+## 📋 Moderation Commands
+
+Prefix: `w!`
+
+| Command | Usage | Description | Required Permission |
+| :--- | :--- | :--- | :--- |
+| `ban` | `w!ban @user [reason]` | Bans a user from the server | Ban Members |
+| `kick` | `w!kick @user [reason]` | Kicks a user from the server | Kick Members |
+| `mute` | `w!mute @user <time> [reason]` | Times out a user (`10m`, `1h`, `1d`) | Moderate Members |
+| `unmute` | `w!unmute @user` | Removes timeout from a user | Moderate Members |
+
+---
+
 ## 🚀 Getting Started
 
 Follow these steps to set up and run the bot locally on your machine.
@@ -28,3 +41,4 @@ Follow these steps to set up and run the bot locally on your machine.
    ```bash
    git clone [https://github.com/Yugoexx/discord-bot.git](https://github.com/Yugoexx/discord-bot.git)
    cd discord-bot
+   
