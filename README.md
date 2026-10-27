@@ -1,4 +1,4 @@
-# Wentyy Discord Bot 🤖
+# Wenty Discord Bot 🤖
 
 A modular, advanced, and clean Discord bot built with Python using `discord.py`. Designed for seamless server management, automated tasks, and future expandability.
 
