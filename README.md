@@ -1,59 +1,55 @@
-# Wenty Discord Bot 🤖
+# Wentyy Discord Bot 🤖
 
-A modular, advanced, and clean Discord bot built with Python using `discord.py`. Designed for seamless server management, automated tasks, and future expandability.
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python&logoColor=white)
+![Discord.py](https://img.shields.io/badge/discord.py-2.x-5865F2?style=for-the-badge&logo=discord&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.style=for-the-badge)
+
+A modular, advanced, and clean Discord moderation and utility bot built with Python. Designed for seamless server management, comprehensive audit logging, automated tasks, and high expandability.
+
+</div>
 
 ---
 
 ## ✨ Features
 
-- **Dynamic Status Loop:** Automatically rotates through custom statuses using `discord.ext.tasks`.
-- **Auto-Role System:** Automatically assigns specified roles to new members upon joining.
-- **Passive Voice Presence:** Automatically connects to a designated voice channel on startup with muted microphone and deafened headphones.
-- **Comprehensive Logging System:** Tracks and logs moderation actions (ban, unban), messages (delete, edit), server changes (channels), and voice state activities into specific channels via `settings.json`.
-- **Modular Architecture:** Built with clean code practices using Cogs under the `cogs/` directory.
+- **Modular Architecture:** Cleanly organized using `cogs/` for easy feature expansion and maintenance.
+- **Comprehensive Audit Logging:** Tracks and logs everything from moderation actions (bans, kicks, timeouts) and message edits/deletions to server channel modifications and voice state activities into specific channels configured via `settings.json`.
+- **Auto-Role System:** Instantly and automatically assigns designated roles to new members upon joining the server.
+- **Passive Voice Presence:** Automatically connects to a configured voice channel on startup with automated self-deafen and self-mute states.
+- **Dynamic Status Loop:** Automatically rotates through custom bot statuses using `discord.ext.tasks`.
 
 ---
 
-## 📋 Moderation Commands
+## 📋 Command Reference
 
 Prefix: `w!`
 
-| Command | Usage | Description | Required Permission |
-| :--- | :--- | :--- | :--- |
-| `ban` | `w!ban @user [reason]` | Bans a user from the server | Ban Members |
-| `unban` | `w!unban <user_id> [reason]` | Unbans a user using their ID | Ban Members |
-| `kick` | `w!kick @user [reason]` | Kicks a user from the server | Kick Members |
-| `timeout` (`mute`) | `w!timeout @user <time> [reason]` | Times out a user (blocks text/voice). Default: `15m` | Moderate Members |
-| `untimeout` (`unmute`) | `w!untimeout @user` | Removes timeout from a user | Moderate Members |
-| `clear` (`sil`) | `w!clear <amount>` | Deletes a specified amount of messages | Manage Messages |
+| Command | Aliases | Usage | Description | Required Permission |
+| :--- | :--- | :--- | :--- | :--- |
+| `ban` | - | `w!ban @user [reason]` | Bans a specified user from the server | Ban Members |
+| `unban` | - | `w!unban <user_id> [reason]` | Unbans a user using their Discord ID | Ban Members |
+| `kick` | - | `w!kick @user [reason]` | Kicks a specified user from the server | Kick Members |
+| `timeout` | `mute` | `w!timeout @user [time] [reason]` | Times out a user (blocks text/voice). Default: `15m` | Moderate Members |
+| `untimeout` | `unmute` | `w!untimeout @user` | Removes active timeout from a user | Moderate Members |
+| `clear` | `sil` | `w!clear <amount>` | Deletes a specified amount of messages | Manage Messages |
 
 ---
+
 ## 📂 Project Structure
 
 ```text
 discord-bot/
 │
 ├── cogs/
-│   ├── moderation.py  # Moderation commands cog
-│   ├── autorole.py    # Auto-role cog
-│   └── logger.py      # Comprehensive log system cog
-├── bot.py             # Main entry point of the bot
-├── settings.json      # Configuration & Channel IDs
-├── .env               # Environment variables (ignored by git)
-├── .gitignore         # Git ignore rules
+│   ├── moderation.py  # Core moderation commands (ban, kick, timeout, clear)
+│   ├── autorole.py    # Automated member role assignment cog
+│   └── logger.py      # Comprehensive audit & event logging cog
+│
+├── bot.py             # Main entry point and event loop runner
+├── settings.json      # Dynamic configuration & channel/role IDs
+├── requirements.txt   # Project dependencies (discord.py, PyNaCl, davey, etc.)
+├── .env               # Private environment variables (ignored by git)
+├── .gitignore         # Git ignore configuration rules
 └── README.md          # Project documentation
-## 🚀 Getting Started
-
-Follow these steps to set up and run the bot locally on your machine.
-
-### Prerequisites
-
-- Python 3.8 or higher installed on your system.
-- Git installed.
-
-### Installation & Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/Yugoexx/discord-bot.git](https://github.com/Yugoexx/discord-bot.git)
-   cd discord-bot
