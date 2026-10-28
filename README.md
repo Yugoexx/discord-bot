@@ -4,7 +4,6 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python&logoColor=white)
 ![Discord.py](https://img.shields.io/badge/discord.py-2.x-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green.style=for-the-badge)
 
 A modular, advanced, and clean Discord moderation and utility bot built with Python. Designed for seamless server management, comprehensive audit logging, automated tasks, and high expandability.
 
