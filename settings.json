@@ -1,10 +1,10 @@
 {
-  "autorole_id": KULLANICI_YENI_UYE_ROL_ID_BURAYA,
-  "voice_channel_id": BOTUN_SES_KANALI_ID_BURAYA,
+  "autorole_id": 1554488292882382978,
+  "voice_channel_id": 1554488294723686549,
   "log_channels": {
-    "moderation": BAN_KICK_LOG_KANAL_ID_BURAYA,
-    "message": MESAJ_SILME_DUZENLEME_LOG_ID_BURAYA,
-    "server": KANAL_OLUSTURMA_SUNUCU_LOG_ID_BURAYA,
-    "voice": SES_HAREKETLERI_LOG_ID_BURAYA
+    "moderation": 1564796657894301787,
+    "message": 1564796708037067033,
+    "server": 1564796787145965688,
+    "voice": 1564796818448060506
   }
 }
