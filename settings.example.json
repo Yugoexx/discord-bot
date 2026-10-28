@@ -1,0 +1,20 @@
+{
+    "autorole_id": 0,
+    "voice_channel_id": 0,
+    "welcome_channel_id": 0,
+    "log_channels": {
+        "moderation": 0,
+        "message": 0,
+        "server": 0,
+        "voice": 0
+    },
+    "registration": {
+        "register_channel_id": 0,
+        "register_staff_role_id": 0,
+        "unregistered_role_id": 0,
+        "man_role_id": 0,
+        "woman_role_id": 0,
+        "tag": "✦",
+        "chat_channel_id": 0
+    }
+}
