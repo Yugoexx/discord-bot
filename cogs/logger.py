@@ -1,8 +1,17 @@
-import discord
-from discord.ext import commands
+import asyncio
 import json
 import os
-import asyncio
+
+import discord
+from discord.ext import commands
+
+
+def kisalt(metin: str, limit: int = 1000) -> str:
+    # Discord embed alanları en fazla 1024 karakter alır
+    if len(metin) > limit:
+        return metin[:limit] + "..."
+    return metin
+
 
 class Logger(commands.Cog):
     def __init__(self, bot):
@@ -13,7 +22,7 @@ class Logger(commands.Cog):
             return None
         with open("settings.json", "r", encoding="utf-8") as f:
             settings = json.load(f)
-            
+
         channel_id = settings.get("log_channels", {}).get(category)
         if channel_id:
             return guild.get_channel(channel_id)
@@ -25,7 +34,7 @@ class Logger(commands.Cog):
         channel = self.get_log_channel(guild, "moderation")
         if not channel:
             return
-        
+
         await asyncio.sleep(1)
         executor = "Unknown"
         reason = "No reason provided"
@@ -42,7 +51,7 @@ class Logger(commands.Cog):
         embed = discord.Embed(title="🔨 Member Banned", color=discord.Color.red())
         embed.add_field(name="Banned User", value=f"{user} (`{user.id}`)", inline=False)
         embed.add_field(name="Moderator", value=f"{executor}", inline=False)
-        embed.add_field(name="Reason", value=reason, inline=False)
+        embed.add_field(name="Reason", value=kisalt(reason), inline=False)
         await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -76,12 +85,14 @@ class Logger(commands.Cog):
 
         await asyncio.sleep(1)
         try:
-            async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.kick):
-                if entry.target.id == member.id:
+            async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.kick):
+                gecen = (discord.utils.utcnow() - entry.created_at).total_seconds()
+                # Sadece son 10 saniyedeki kayıt bu ayrılmaya aittir
+                if entry.target.id == member.id and gecen < 10:
                     embed = discord.Embed(title="👢 Member Kicked", color=discord.Color.orange())
                     embed.add_field(name="Kicked User", value=f"{member} (`{member.id}`)", inline=False)
                     embed.add_field(name="Moderator", value=f"{entry.user}", inline=False)
-                    embed.add_field(name="Reason", value=entry.reason or "No reason provided", inline=False)
+                    embed.add_field(name="Reason", value=kisalt(entry.reason or "No reason provided"), inline=False)
                     await channel.send(embed=embed)
                     break
         except Exception:
@@ -113,7 +124,7 @@ class Logger(commands.Cog):
                 embed = discord.Embed(title="🔇 Member Timed Out (Muted)", color=discord.Color.orange())
                 embed.add_field(name="User", value=f"{after} (`{after.id}`)", inline=False)
                 embed.add_field(name="Moderator", value=f"{executor}", inline=False)
-                embed.add_field(name="Reason", value=reason, inline=False)
+                embed.add_field(name="Reason", value=kisalt(reason), inline=False)
                 await channel.send(embed=embed)
             else:
                 embed = discord.Embed(title="🔊 Timeout Removed (Unmuted)", color=discord.Color.green())
@@ -131,7 +142,11 @@ class Logger(commands.Cog):
             embed = discord.Embed(title="🗑️ Message Deleted", color=discord.Color.orange())
             embed.add_field(name="Author", value=f"{message.author} (`{message.author.id}`)", inline=True)
             embed.add_field(name="Channel", value=message.channel.mention, inline=True)
-            embed.add_field(name="Content", value=message.content or "No content (Embed or Image)", inline=False)
+            embed.add_field(
+                name="Content",
+                value=kisalt(message.content) or "No content (Embed or Image)",
+                inline=False,
+            )
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -142,8 +157,8 @@ class Logger(commands.Cog):
         if channel:
             embed = discord.Embed(title="✏️ Message Edited", color=discord.Color.blue())
             embed.add_field(name="Author", value=f"{before.author} (`{before.author.id}`)", inline=False)
-            embed.add_field(name="Before", value=before.content or "Empty", inline=False)
-            embed.add_field(name="After", value=after.content or "Empty", inline=False)
+            embed.add_field(name="Before", value=kisalt(before.content) or "Empty", inline=False)
+            embed.add_field(name="After", value=kisalt(after.content) or "Empty", inline=False)
             await channel.send(embed=embed)
 
     # --- SERVER / CHANNEL LOGS ---
@@ -180,7 +195,8 @@ class Logger(commands.Cog):
         executor = "Unknown"
         try:
             async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
-                if entry.target.name == channel.name:
+                # Silinmiş kanalın kaydında isim yok, id ile karşılaştırılır
+                if entry.target.id == channel.id:
                     executor = entry.user
                     break
         except Exception:
@@ -265,6 +281,7 @@ class Logger(commands.Cog):
 
         if embed:
             await channel.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Logger(bot))
