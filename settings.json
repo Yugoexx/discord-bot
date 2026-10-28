@@ -1,6 +1,7 @@
 {
   "autorole_id": 1554488292882382978,
   "voice_channel_id": 1554488294723686549,
+  "welcome_channel_id": 1554488293524242508,
   "log_channels": {
     "moderation": 1564796657894301787,
     "message": 1564796708037067033,

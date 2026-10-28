@@ -1,4 +1,4 @@
-# Wentyy Discord Bot 🤖
+# Wenty Discord Bot 🤖
 
 <div align="center">
 
@@ -18,7 +18,7 @@ A modular, advanced, and clean Discord moderation and utility bot built with Pyt
 - **Auto-Role System:** Instantly and automatically assigns designated roles to new members upon joining the server.
 - **Passive Voice Presence:** Automatically connects to a configured voice channel on startup with automated self-deafen and self-mute states.
 - **Dynamic Status Loop:** Automatically rotates through custom bot statuses using `discord.ext.tasks`.
-
+- **Welcome & Goodbye System:** Sends custom interactive embed messages when members join or leave the server, configured via `settings.json`.
 ---
 
 ## 📋 Command Reference
@@ -45,6 +45,7 @@ discord-bot/
 │   ├── moderation.py  # Core moderation commands (ban, kick, timeout, clear)
 │   ├── autorole.py    # Automated member role assignment cog
 │   └── logger.py      # Comprehensive audit & event logging cog
+│   └── welcomer.py    # Welcome and goodbye greeting messages cog
 │
 ├── bot.py             # Main entry point and event loop runner
 ├── settings.json      # Dynamic configuration & channel/role IDs

@@ -27,6 +27,7 @@ async def on_ready():
     await bot.load_extension("cogs.moderation")
     await bot.load_extension("cogs.autorole")
     await bot.load_extension("cogs.logger")
+    await bot.load_extension("cogs.welcomer")
     
     # Ses kanalına bağlanıp pasif durma (kulaklık ve mikrofon kapalı)
     if os.path.exists("settings.json"):
