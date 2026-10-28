@@ -1,11 +1,21 @@
 {
-  "autorole_id": 1554488292882382978,
-  "voice_channel_id": 1554488294723686549,
-  "welcome_channel_id": 1554488293524242508,
-  "log_channels": {
-    "moderation": 1564796657894301787,
-    "message": 1564796708037067033,
-    "server": 1564796787145965688,
-    "voice": 1564796818448060506
-  }
+    "autorole_id": 1554488292882382978,
+    "voice_channel_id": 1554488294723686549,
+    "welcome_channel_id": 1554488293524242508,
+    "log_channels": {
+        "moderation": 1564796657894301787,
+        "message": 1564796708037067033,
+        "server": 1564796787145965688,
+        "voice": 1564796818448060506
+    },
+    "registration": {
+        "mode": "self",
+        "register_channel_id": 1554488293524242505,
+        "register_staff_role_id": 1554488292932591660,
+        "unregistered_role_id": 1554488292882382978,
+        "man_role_id": 1554488292920262786,
+        "woman_role_id": 1554488292920262787,
+        "tag": "✦",
+        "chat_channel_id": 1554488293935030282
+    }
 }

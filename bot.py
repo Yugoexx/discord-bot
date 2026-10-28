@@ -28,6 +28,7 @@ async def on_ready():
     await bot.load_extension("cogs.autorole")
     await bot.load_extension("cogs.logger")
     await bot.load_extension("cogs.welcomer")
+    await bot.load_extension("cogs.register")
     
     # Ses kanalına bağlanıp pasif durma (kulaklık ve mikrofon kapalı)
     if os.path.exists("settings.json"):
@@ -44,6 +45,14 @@ async def on_ready():
                         except Exception as e:
                             print(f"Ses kanalına bağlanılamadı: {e}")
 
+    try:
+        for guild in bot.guilds:
+            bot.tree.copy_global_to(guild=guild)
+            synced = await bot.tree.sync(guild=guild)
+            print(f"Synced {len(synced)} command(s) for guild: {guild.name}")
+    except Exception as e:
+        print(e)
+    
     print(f"{bot.user.name}, Hii, i'm Wentyy! (ID: {bot.user.id})")
     print("--------------------------------------------------------")
     
