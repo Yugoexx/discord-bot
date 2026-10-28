@@ -1,9 +1,13 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
 import json
 import os
+import re
+
+import discord
+from discord import app_commands
+from discord.ext import commands
+
 from ayarlar import get_settings, save_settings
+
 
 def add_staff_stat(staff_id: int):
     stats_file = "stats.json"
@@ -24,6 +28,15 @@ def add_staff_stat(staff_id: int):
     return data[staff_key]
 
 
+def yetkili_mi(interaction: discord.Interaction) -> bool:
+    # Kayıt yetkilisi rolü varsa ya da yönetici ise True
+    staff_role_id = get_settings().get("registration", {}).get("register_staff_role_id")
+    staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
+    if staff_role and staff_role in interaction.user.roles:
+        return True
+    return interaction.user.guild_permissions.administrator
+
+
 # --- REGISTRATION MODAL (NAME & AGE) ---
 class RegisterModal(discord.ui.Modal, title="Member Registration"):
     name = discord.ui.TextInput(
@@ -41,29 +54,16 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         required=True
     )
 
-    def __init__(self, target_member: discord.Member, gender: str):
+    def __init__(self, target_member: discord.Member, gender: str, panel_message: discord.Message = None):
         super().__init__()
         self.target_member = target_member
         self.gender = gender
+        self.panel_message = panel_message
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
-        settings = get_settings()
-        reg_cfg = settings.get("registration", {})
-
-        staff_role_id = reg_cfg.get("register_staff_role_id")
-        unreg_role_id = reg_cfg.get("unregistered_role_id")
-        man_role_id = reg_cfg.get("man_role_id")
-        woman_role_id = reg_cfg.get("woman_role_id")
-        chat_channel_id = reg_cfg.get("chat_channel_id")
-        tag = reg_cfg.get("tag", "")
-
-        # Staff Permission Check
-        staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
-        is_staff = (staff_role in interaction.user.roles) if staff_role else False
-
-        if not is_staff and not interaction.user.guild_permissions.administrator:
+        if not yetkili_mi(interaction):
             await interaction.followup.send("❌ Only **Registration Staff** can perform this action!", ephemeral=True)
             return
 
@@ -71,6 +71,13 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         if not self.age.value.isdigit() or not (13 <= int(self.age.value) <= 99):
             await interaction.followup.send("❌ Age must be a number between 13 and 99.", ephemeral=True)
             return
+
+        reg_cfg = get_settings().get("registration", {})
+        unreg_role_id = reg_cfg.get("unregistered_role_id")
+        man_role_id = reg_cfg.get("man_role_id")
+        woman_role_id = reg_cfg.get("woman_role_id")
+        chat_channel_id = reg_cfg.get("chat_channel_id")
+        tag = reg_cfg.get("tag", "")
 
         target_role_id = man_role_id if self.gender == "man" else woman_role_id
         target_role = interaction.guild.get_role(target_role_id)
@@ -95,6 +102,13 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         except discord.Forbidden:
             await interaction.followup.send("❌ Missing permissions to manage roles for this user! (Check role hierarchy)", ephemeral=True)
             return
+
+        # Panelin butonlarını kaldır, aynı üye iki kez kaydedilmesin
+        if self.panel_message:
+            try:
+                await self.panel_message.edit(view=None)
+            except discord.HTTPException:
+                pass
 
         # Update Stats
         total_registers = add_staff_stat(interaction.user.id)
@@ -134,35 +148,43 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
                 await chat_channel.send(content=f"Welcome to the server, {self.target_member.mention}! 👋", embed=welcome_embed)
 
 
-# --- REGISTRATION ACTION VIEW (BUTTONS) ---
-class RegisterActionView(discord.ui.View):
-    def __init__(self, target_member: discord.Member):
-        super().__init__(timeout=None)
-        self.target_member = target_member
+# --- PERSISTENT REGISTRATION BUTTON ---
+# custom_id biçimi: reg:<man|woman>:<üye_id>. Bot yeniden başlasa da bu kalıp yakalanır.
+class RegisterButton(
+    discord.ui.DynamicItem[discord.ui.Button],
+    template=r"reg:(?P<gender>man|woman):(?P<uid>[0-9]+)",
+):
+    def __init__(self, gender: str, uid: int):
+        self.gender = gender
+        self.uid = uid
+        super().__init__(
+            discord.ui.Button(
+                label="Male" if gender == "man" else "Female",
+                style=discord.ButtonStyle.primary if gender == "man" else discord.ButtonStyle.danger,
+                custom_id=f"reg:{gender}:{uid}",
+                emoji="👨" if gender == "man" else "👩",
+            )
+        )
 
-    @discord.ui.button(label="Male", style=discord.ButtonStyle.primary, custom_id="reg_btn_man", emoji="👨")
-    async def register_man(self, interaction: discord.Interaction, button: discord.ui.Button):
-        settings = get_settings()
-        staff_role_id = settings.get("registration", {}).get("register_staff_role_id")
-        staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
+    @classmethod
+    async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str], /):
+        return cls(match["gender"], int(match["uid"]))
 
-        if staff_role and staff_role not in interaction.user.roles and not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("❌ Only **Registration Staff** can use this button!", ephemeral=True)
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if yetkili_mi(interaction):
+            return True
+        await interaction.response.send_message("❌ Only **Registration Staff** can use this button!", ephemeral=True)
+        return False
+
+    async def callback(self, interaction: discord.Interaction):
+        member = interaction.guild.get_member(self.uid)
+        if member is None:
+            await interaction.response.send_message("❌ This member is no longer in the server.", ephemeral=True)
             return
 
-        await interaction.response.send_modal(RegisterModal(target_member=self.target_member, gender="man"))
-
-    @discord.ui.button(label="Female", style=discord.ButtonStyle.danger, custom_id="reg_btn_woman", emoji="👩")
-    async def register_woman(self, interaction: discord.Interaction, button: discord.ui.Button):
-        settings = get_settings()
-        staff_role_id = settings.get("registration", {}).get("register_staff_role_id")
-        staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
-
-        if staff_role and staff_role not in interaction.user.roles and not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message("❌ Only **Registration Staff** can use this button!", ephemeral=True)
-            return
-
-        await interaction.response.send_modal(RegisterModal(target_member=self.target_member, gender="woman"))
+        await interaction.response.send_modal(
+            RegisterModal(target_member=member, gender=self.gender, panel_message=interaction.message)
+        )
 
 
 # --- COG & SLASH COMMANDS ---
@@ -170,10 +192,16 @@ class Register(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_load(self):
+        # Bot başlarken buton kalıbını kaydet, eski paneller de çalışsın
+        self.bot.add_dynamic_items(RegisterButton)
+
+    async def cog_unload(self):
+        self.bot.remove_dynamic_items(RegisterButton)
+
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        settings = get_settings()
-        reg_cfg = settings.get("registration", {})
+        reg_cfg = get_settings().get("registration", {})
         channel_id = reg_cfg.get("register_channel_id")
         unreg_role_id = reg_cfg.get("unregistered_role_id")
 
@@ -201,7 +229,9 @@ class Register(commands.Cog):
         embed.add_field(name="Account Created", value=f"`{member.created_at.strftime('%Y-%m-%d')}`", inline=False)
         embed.set_footer(text=f"User ID: {member.id}")
 
-        view = RegisterActionView(target_member=member)
+        view = discord.ui.View(timeout=None)
+        view.add_item(RegisterButton("man", member.id))
+        view.add_item(RegisterButton("woman", member.id))
         await channel.send(content=f"Registration panel for {member.mention}:", embed=embed, view=view)
 
     @app_commands.command(name="setup-register", description="Configures the server registration system.")
@@ -254,6 +284,7 @@ class Register(commands.Cog):
         embed.add_field(name="Registration Tag", value=f"`{tag}`", inline=True)
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 async def setup(bot):
     await bot.add_cog(Register(bot))
