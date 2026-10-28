@@ -1,10 +1,10 @@
 import itertools
-import json
 import os
 
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
+from ayarlar import get_settings
 
 load_dotenv()
 
@@ -49,12 +49,7 @@ class WentyBot(commands.Bot):
 
     async def ses_kanalina_baglan(self):
         # Ses kanalına kulaklık ve mikrofon kapalı bağlanıp pasif bekler
-        if not os.path.exists("settings.json"):
-            return
-        with open("settings.json", "r", encoding="utf-8") as f:
-            ayarlar = json.load(f)
-
-        kanal_id = ayarlar.get("voice_channel_id")
+        kanal_id = get_settings().get("voice_channel_id")
         if not kanal_id:
             return
 

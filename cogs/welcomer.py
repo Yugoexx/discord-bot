@@ -1,19 +1,15 @@
 import discord
 from discord.ext import commands
-import json
-import os
+
+from ayarlar import get_settings
+
 
 class Welcomer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     def get_welcome_channel(self, guild):
-        if not os.path.exists("settings.json"):
-            return None
-        with open("settings.json", "r", encoding="utf-8") as f:
-            settings = json.load(f)
-            
-        channel_id = settings.get("welcome_channel_id")
+        channel_id = get_settings().get("welcome_channel_id")
         if channel_id:
             return guild.get_channel(channel_id)
         return None
@@ -50,6 +46,7 @@ class Welcomer(commands.Cog):
         embed.set_footer(text=f"ID: {member.id}")
 
         await channel.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Welcomer(bot))

@@ -1,9 +1,9 @@
 import asyncio
-import json
-import os
 
 import discord
 from discord.ext import commands
+
+from ayarlar import get_settings
 
 
 def kisalt(metin: str, limit: int = 1000) -> str:
@@ -18,12 +18,7 @@ class Logger(commands.Cog):
         self.bot = bot
 
     def get_log_channel(self, guild, category):
-        if not os.path.exists("settings.json"):
-            return None
-        with open("settings.json", "r", encoding="utf-8") as f:
-            settings = json.load(f)
-
-        channel_id = settings.get("log_channels", {}).get(category)
+        channel_id = get_settings().get("log_channels", {}).get(category)
         if channel_id:
             return guild.get_channel(channel_id)
         return None

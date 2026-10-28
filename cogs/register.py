@@ -3,16 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import json
 import os
-
-def get_settings():
-    if not os.path.exists("settings.json"):
-        return {}
-    with open("settings.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def save_settings(data):
-    with open("settings.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+from ayarlar import get_settings, save_settings
 
 def add_staff_stat(staff_id: int):
     stats_file = "stats.json"
@@ -23,13 +14,13 @@ def add_staff_stat(staff_id: int):
                 data = json.load(f)
             except Exception:
                 data = {}
-    
+
     staff_key = str(staff_id)
     data[staff_key] = data.get(staff_key, 0) + 1
-    
+
     with open(stats_file, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-        
+
     return data[staff_key]
 
 
@@ -60,7 +51,7 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
 
         settings = get_settings()
         reg_cfg = settings.get("registration", {})
-        
+
         staff_role_id = reg_cfg.get("register_staff_role_id")
         unreg_role_id = reg_cfg.get("unregistered_role_id")
         man_role_id = reg_cfg.get("man_role_id")
@@ -71,9 +62,14 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         # Staff Permission Check
         staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
         is_staff = (staff_role in interaction.user.roles) if staff_role else False
-        
+
         if not is_staff and not interaction.user.guild_permissions.administrator:
             await interaction.followup.send("❌ Only **Registration Staff** can perform this action!", ephemeral=True)
+            return
+
+        # Age Validation
+        if not self.age.value.isdigit() or not (13 <= int(self.age.value) <= 99):
+            await interaction.followup.send("❌ Age must be a number between 13 and 99.", ephemeral=True)
             return
 
         target_role_id = man_role_id if self.gender == "man" else woman_role_id
@@ -81,7 +77,7 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         unreg_role = interaction.guild.get_role(unreg_role_id)
 
         if not target_role:
-            await interaction.response.send_message("❌ Configured gender role not found in the server!", ephemeral=True)
+            await interaction.followup.send("❌ Configured gender role not found in the server!", ephemeral=True)
             return
 
         # Update Nickname
@@ -103,7 +99,7 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
         # Update Stats
         total_registers = add_staff_stat(interaction.user.id)
         gender_text = "👨 Male" if self.gender == "man" else "👩 Female"
-        
+
         # 1. Staff Log Embed (Sent to Registration Channel)
         embed = discord.Embed(
             title="✅ Successful Registration",
@@ -134,7 +130,7 @@ class RegisterModal(discord.ui.Modal, title="Member Registration"):
                 )
                 welcome_embed.set_thumbnail(url=self.target_member.display_avatar.url)
                 welcome_embed.set_footer(text=f"{interaction.guild.name} Family")
-                
+
                 await chat_channel.send(content=f"Welcome to the server, {self.target_member.mention}! 👋", embed=welcome_embed)
 
 
@@ -149,7 +145,7 @@ class RegisterActionView(discord.ui.View):
         settings = get_settings()
         staff_role_id = settings.get("registration", {}).get("register_staff_role_id")
         staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
-        
+
         if staff_role and staff_role not in interaction.user.roles and not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ Only **Registration Staff** can use this button!", ephemeral=True)
             return
@@ -161,7 +157,7 @@ class RegisterActionView(discord.ui.View):
         settings = get_settings()
         staff_role_id = settings.get("registration", {}).get("register_staff_role_id")
         staff_role = interaction.guild.get_role(staff_role_id) if staff_role_id else None
-        
+
         if staff_role and staff_role not in interaction.user.roles and not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message("❌ Only **Registration Staff** can use this button!", ephemeral=True)
             return
@@ -220,13 +216,13 @@ class Register(commands.Cog):
     )
     @app_commands.checks.has_permissions(administrator=True)
     async def setup_register(
-        self, 
-        interaction: discord.Interaction, 
-        channel: discord.TextChannel, 
-        staff_role: discord.Role, 
-        unreg_role: discord.Role, 
-        man_role: discord.Role, 
-        woman_role: discord.Role, 
+        self,
+        interaction: discord.Interaction,
+        channel: discord.TextChannel,
+        staff_role: discord.Role,
+        unreg_role: discord.Role,
+        man_role: discord.Role,
+        woman_role: discord.Role,
         chat_channel: discord.TextChannel = None,
         tag: str = "✦"
     ):
