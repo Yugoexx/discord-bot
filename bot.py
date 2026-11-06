@@ -57,7 +57,7 @@ class WentyBot(commands.Bot):
             kanal = guild.get_channel(kanal_id)
             if isinstance(kanal, discord.VoiceChannel) and guild.voice_client is None:
                 try:
-                    await kanal.connect(self_deaf=True, self_mute=True)
+                    await kanal.connect(self_deaf=True, self_mute=False)
                 except Exception as e:
                     print(f"Ses kanalına bağlanılamadı: {e}")
 
