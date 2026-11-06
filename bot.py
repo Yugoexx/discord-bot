@@ -14,6 +14,7 @@ EXTENSIONS = [
     "cogs.logger",
     "cogs.welcomer",
     "cogs.register",
+    "cogs.karakter",
 ]
 
 STATUS_LIST = itertools.cycle([
@@ -76,3 +77,4 @@ if __name__ == "__main__":
     if not token:
         raise SystemExit("TOKEN bulunamadı. .env dosyasına TOKEN=... satırı ekle.")
     bot.run(token)
+    
